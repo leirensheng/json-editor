@@ -14,6 +14,7 @@
       <el-input
         size="mini"
         type="text"
+        placeholder="字段"
         v-model="tempKey"
         style="width:100px"
         :disabled="isRoot||typeof bindKey==='number'"
@@ -73,17 +74,17 @@
         />
       </div>
       <div v-else>
-        <json-editor
+        <div v-for="(item) in objectDataHandled"  :key="item.uniqueKey">
+          <json-editor
           class="has-margin"
-          v-for="(val,key) in value"
           :isRoot="false"
-          :value="val"
-          :key="key"
-          :bindKey="key"
+          :value="value[item.key]"
+          :bindKey="item.key"
           @deleteItem="handleDelete"
-          @update:bindKey="(newBindKey)=>handleUpdateKey({key,value,newBindKey})"
-          @update:value="(newVal)=>handleUpdateVal({key,value,newVal})"
+          @update:bindKey="(newBindKey)=>handleUpdateKey({key:item.key,value,newBindKey})"
+          @update:value="(newVal)=>handleUpdateVal({key:item.key,value,newVal})"
         />
+        </div>
       </div>
       <add-btn @click="handleAdd" />
     </div>
@@ -172,6 +173,7 @@ export default {
       }
 
       if (message) {
+        console.log(message);
         this.$notification({
           message,
           type: 'warning',
@@ -184,12 +186,42 @@ export default {
         this.updateKey(val);
       }
     },
+    value: {
+      deep: true,
+      immediate: true,
+      handler(val) {
+        if (this.type === 'object') {
+          const keys = Object.keys(val);
+          const arr = this.objectDataHandled;
+          if (arr.length === keys.length) {
+            const objectDataKeys = arr.map(one => one.key);
+            const keysSet = new Set(keys);
+            const changeIndex = objectDataKeys.findIndex(one => !keysSet.has(one));
+            if (changeIndex !== -1) {
+              const newKey = keys.find(one => !objectDataKeys.includes(one));
+              const newVal = { ...arr[changeIndex], key: newKey };
+              this.objectDataHandled.splice(changeIndex, 1, newVal);
+            }
+          } else if (arr.length > keys.length) {
+            const deleteItemIdx = arr.findIndex(one => !keys.includes(one.key));
+            this.objectDataHandled.splice(deleteItemIdx, 1);
+          } else {
+            this.uniqueKey = this.uniqueKey + 1;
+            const objectDataKeys = arr.map(one => one.key);
+            const targetKey = keys.find(key => !objectDataKeys.includes(key));
+            this.objectDataHandled = [...arr, { value: val[targetKey], key: targetKey, uniqueKey: this.uniqueKey }];
+          }
+        }
+      },
+    },
   },
 
   data() {
     return {
       tempKey: '',
       noUpdateKey: false,
+      uniqueKey: 1,
+      objectDataHandled: [],
     };
   },
   mounted() {
@@ -216,9 +248,20 @@ export default {
       }
     },
     handleAdd() {
-      const newValue = this.type === 'array'
+      const isArray = this.type === 'array';
+      if (!isArray) {
+        if ('' in this.value) {
+          this.$notification({
+            message: '请先填写空的字段',
+            type: 'warning',
+          });
+          return;
+        }
+      }
+      const newValue = isArray
         ? [...this.value, '']
-        : { ...this.value, [this.getRandomId()]: '' };
+        : { ...this.value, '': '' };
+
       if (this.isRoot) {
         this.$emit('input', newValue);
       } else {

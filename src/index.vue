@@ -158,14 +158,38 @@ export default {
       },
       immediate: true,
     },
-    tempKey(val) {
-      this.updateKey(val);
+    tempKey(val, oldVal) {
+      if (this.noUpdateKey) {
+        this.noUpdateKey = false;
+        return;
+      }
+      const keys = Object.keys(this.$parent.value);
+      let message = '';
+      if (keys.includes(val)) {
+        message = `已经存在字段${val}`;
+      } else if (val === '') {
+        message = '字段名不能为空';
+      }
+
+      if (message) {
+        this.$notification({
+          message,
+          type: 'warning',
+        });
+        this.noUpdateKey = true;
+        setTimeout(() => {
+          this.tempKey = oldVal;
+        }, 500);
+      } else {
+        this.updateKey(val);
+      }
     },
   },
 
   data() {
     return {
       tempKey: '',
+      noUpdateKey: false,
     };
   },
   mounted() {

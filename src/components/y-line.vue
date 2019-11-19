@@ -1,5 +1,5 @@
 <template>
-  <svg
+   <svg
     width="1"
     :height="height"
     version="1.1"
@@ -10,7 +10,7 @@
       x2="0"
       :y2="height"
       style="stroke: rgb(219, 203, 203);stroke-width:2"
-    />
+      />
   </svg>
 </template>
 

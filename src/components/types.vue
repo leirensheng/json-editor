@@ -4,7 +4,7 @@
       v-for="one in types"
       :key="one.value"
       :value="one.value"
-    >{{one.label}}</option>
+    >{{one.value}}</option>
   </select>
 </template>
 

@@ -15,7 +15,9 @@ export default {
   data() {
     return {
       // json:[123]
-      json: { a: [{ b: 4 }] },
+      json: {
+        a: [{ b: 5 }], b: 2, c: 5, d: 7,
+      },
     };
   },
   watch: {

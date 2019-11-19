@@ -206,11 +206,22 @@ export default {
           } else if (arr.length > keys.length) {
             const deleteItemIdx = arr.findIndex(one => !keys.includes(one.key));
             this.objectDataHandled.splice(deleteItemIdx, 1);
-          } else {
+          } else if (keys.length - arr.length === 1) {
             this.uniqueKey = this.uniqueKey + 1;
             const objectDataKeys = arr.map(one => one.key);
             const targetKey = keys.find(key => !objectDataKeys.includes(key));
             this.objectDataHandled = [...arr, { value: val[targetKey], key: targetKey, uniqueKey: this.uniqueKey }];
+          } else {
+            const tempData = keys.map((key) => {
+              this.uniqueKey = this.uniqueKey + 1;
+              return {
+                key,
+                value: val[key],
+                uniqueKey: this.uniqueKey,
+              };
+            });
+
+            this.objectDataHandled = tempData.sort((a, b) => a.uniqueKey - b.uniqueKey);
           }
         }
       },

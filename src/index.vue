@@ -45,6 +45,7 @@
       />
       <el-select
         size="mini"
+        style="width:100px;margin-left:10px"
         v-if="type==='boolean'"
         :value="String(value)"
         @input="updateVal"

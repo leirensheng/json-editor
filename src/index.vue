@@ -3,7 +3,7 @@
     <div class="one-item">
       <XLine
         v-if="!isRoot"
-        style="position:relative;top:-4px"
+        style="position:relative;top:-1px"
       />
       <span
         v-else
@@ -15,7 +15,7 @@
         size="mini"
         type="text"
         v-model="tempKey"
-        style="width:180px"
+        style="width:100px"
         :disabled="isRoot||typeof bindKey==='number'"
       />
       <!-- <input
@@ -26,7 +26,7 @@
         :disabled="isRoot||typeof bindKey==='number'"
         @input="(e)=>updateKey(e.target.value)"
       /> -->
-      <span style="padding:10px">=</span>
+      <span style="padding:0 10px">=</span>
       <select-type
         :key="getRandomId()"
         class="slect-type"
@@ -36,7 +36,7 @@
 
       <el-input
         size="mini"
-        style="width:180px;margin-left:10px"
+        style="width:100px;margin-left:10px"
         v-if="['number','string'].includes(type)"
         :value="value"
         placeholder="值"
@@ -45,11 +45,11 @@
       <el-select
         size="mini"
         v-if="type==='boolean'"
-        :value="value"
+        :value="String(value)"
         @input="updateVal"
       >
-        <el-option :value="true">true</el-option>
-        <el-option :value="false">false</el-option>
+        <el-option value="true">true</el-option>
+        <el-option value="false">false</el-option>
       </el-select>
 
       <delete-btn
@@ -59,7 +59,7 @@
       />
     </div>
 
-    <div v-if="isObjectOrArray">
+    <div v-if="isObjectOrArray" style="position:relative;top:-2px">
       <div v-if="type==='array'">
         <json-editor
           class="has-margin"
@@ -169,7 +169,6 @@ export default {
     };
   },
   mounted() {
-    // this.updateVal = debounce(this.updateVal);
     this.updateKey = debounce(this.updateKey);
   },
   methods: {
@@ -218,10 +217,15 @@ export default {
     updateVal(val) {
       if (this.type === 'number') {
         if (!/^\d*$/g.test(val)) {
-          alert('格式有问题');
+          this.$notification({
+            message: '格式不正确！',
+            type: 'warning',
+          });
         } else {
           this.$emit('update:value', Number(val));
         }
+      } else if (this.type === 'boolean') {
+        this.$emit('update:value', val !== 'false');
       } else {
         this.$emit('update:value', val);
       }
@@ -236,15 +240,18 @@ export default {
   border-left: 1px solid rgb(219, 203, 203);
 }
 .delete-btn {
-  position: relative;
-  top: 4px;
   margin-left: 10px;
 }
-
+.select-type{
+  position: relative;
+  top:-0.5px;
+}
 .one-item {
   position: relative;
   padding-top: 25px;
   top: -1px;
+  display: flex;
+  align-items: center;
 }
 .has-margin {
   margin-left: 30px;

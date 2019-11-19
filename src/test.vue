@@ -1,5 +1,10 @@
 <template>
-  <json-editor v-model="json"></json-editor>
+  <div>
+    <div style="width:1250px">
+      <json-editor v-model="json"></json-editor>
+    </div>
+  </div>
+
 </template>
 
 <script>
@@ -11,7 +16,6 @@ export default {
     return {
       // json:[123]
       json: { a: [{ b: 4 }] },
-
     };
   },
   watch: {
@@ -23,8 +27,6 @@ export default {
     },
   },
   mounted() {},
-  methods: {
-
-  },
+  methods: {},
 };
 </script>

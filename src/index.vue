@@ -1,47 +1,62 @@
 <template>
-  <div :class="isRoot?'':'has-border'">
-    <div class="object-row" :key="getRandomId()">
+  <div :class="isRoot?'json-editor':'json-editor has-border'">
+    <div class="one-item">
       <XLine
         v-if="!isRoot"
         style="position:relative;top:-4px"
-      ></XLine>
+      />
       <span
         v-else
-        style="margin-left:30px"
-      ></span>
-      <input
+        class="has-margin"
+      />
+
+      <!-- el-input需要v-model实时更新 -->
+      <el-input
+        size="mini"
         type="text"
+        v-model="tempKey"
+        style="width:180px"
+        :disabled="isRoot||typeof bindKey==='number'"
+      />
+      <!-- <input
+        size="mini"
+        type="text"
+        style="width:180px"
         :value="bindKey"
         :disabled="isRoot||typeof bindKey==='number'"
         @input="(e)=>updateKey(e.target.value)"
-      >
-      <span>=</span>
+      /> -->
+      <span style="padding:10px">=</span>
       <select-type
+        :key="getRandomId()"
         class="slect-type"
         :isRoot="isRoot"
         v-model="type"
-      ></select-type>
+      />
 
-      <input
-        type="text"
+      <el-input
+        size="mini"
+        style="width:180px;margin-left:10px"
         v-if="['number','string'].includes(type)"
         :value="value"
-        @input="e=>updateVal(e.target.value)"
-      >
-      <select
+        placeholder="值"
+        @input="updateVal"
+      />
+      <el-select
+        size="mini"
         v-if="type==='boolean'"
         :value="value"
-        @input="(e)=>updateVal(e)"
+        @input="updateVal"
       >
-        <option :value="true">true</option>
-        <option :value="false">false</option>
-      </select>
+        <el-option :value="true">true</el-option>
+        <el-option :value="false">false</el-option>
+      </el-select>
 
       <delete-btn
         class="delete-btn"
         v-if="!isRoot"
         @click="()=>this.$emit('deleteItem', bindKey)"
-      ></delete-btn>
+      />
     </div>
 
     <div v-if="isObjectOrArray">
@@ -55,22 +70,22 @@
           :value="item"
           @deleteItem="handleDelete"
           @update:value="(newVal)=>handleUpdateVal({value,key:index,newVal})"
-        ></json-editor>
+        />
       </div>
       <div v-else>
         <json-editor
           class="has-margin"
           v-for="(val,key) in value"
-          :key="key"
           :isRoot="false"
           :value="val"
+          :key="key"
           :bindKey="key"
           @deleteItem="handleDelete"
           @update:bindKey="(newBindKey)=>handleUpdateKey({key,value,newBindKey})"
           @update:value="(newVal)=>handleUpdateVal({key,value,newVal})"
-        ></json-editor>
+        />
       </div>
-      <add-btn @click="handleAdd"></add-btn>
+      <add-btn @click="handleAdd" />
     </div>
   </div>
 </template>
@@ -107,7 +122,7 @@ export default {
         let value;
         if (val === 'string' && this.type === 'number') {
           value = String(this.value);
-        // eslint-disable-next-line no-restricted-globals
+          // eslint-disable-next-line no-restricted-globals
         } else if (val === 'number' && !isNaN(this.value - 0)) {
           value = Number(this.value);
         } else {
@@ -136,12 +151,25 @@ export default {
     AddBtn,
     DeleteBtn,
   },
+  watch: {
+    bindKey: {
+      handler(val) {
+        this.tempKey = val;
+      },
+      immediate: true,
+    },
+    tempKey(val) {
+      this.updateKey(val);
+    },
+  },
 
   data() {
-    return {};
+    return {
+      tempKey: '',
+    };
   },
   mounted() {
-    this.updateVal = debounce(this.updateVal);
+    // this.updateVal = debounce(this.updateVal);
     this.updateKey = debounce(this.updateKey);
   },
   methods: {
@@ -188,24 +216,20 @@ export default {
     },
 
     updateVal(val) {
-      this.$emit('update:value', val);
+      if (this.type === 'number') {
+        if (!/^\d*$/g.test(val)) {
+          alert('格式有问题');
+        } else {
+          this.$emit('update:value', Number(val));
+        }
+      } else {
+        this.$emit('update:value', val);
+      }
     },
   },
 };
 </script>
-<style >
-input,
-select {
-  box-sizing: border-box;
-  width: 95px;
-  height: 27px;
-  padding: 4px;
-  border: 1px solid rgb(219, 203, 203);
-}
-input:disabled {
-  background-color: #f5f7fa;
-  cursor: not-allowed;
-}
+<style lang="scss">
 </style>
 <style scoped>
 .has-border {
@@ -216,10 +240,8 @@ input:disabled {
   top: 4px;
   margin-left: 10px;
 }
-.basic-item {
-  padding-top: 25px;
-}
-.object-row {
+
+.one-item {
   position: relative;
   padding-top: 25px;
   top: -1px;

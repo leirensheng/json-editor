@@ -1,11 +1,14 @@
 <template>
-  <select v-model="type" class="select-type">
-    <option
+  <el-select
+  size="mini"
+  style="width:100px"
+  v-model="type" class="select-type">
+    <el-option
       v-for="one in types"
       :key="one.value"
       :value="one.value"
-    >{{one.value}}</option>
-  </select>
+    >{{one.value}}</el-option>
+  </el-select>
 </template>
 
 <script>

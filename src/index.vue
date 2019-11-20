@@ -21,6 +21,7 @@
 
       <span style="padding:0 10px">=</span>
       <select-type
+        :disabled="isRoot && rootType!==''"
         :key="getRandomId()"
         class="slect-type"
         :isRoot="isRoot"
@@ -103,6 +104,12 @@ export default {
     bindKey: {
       default: () => 'root',
     },
+    jsonName: {
+      default: () => '',
+    },
+    rootType: {
+      default: () => '',
+    },
   },
   computed: {
     isObjectOrArray() {
@@ -113,6 +120,9 @@ export default {
         return this.getType(this.value);
       },
       set(val) {
+        if (this.type === 'object' && val !== 'object') {
+          this.objectToArrayData = [];
+        }
         let value;
         if (val === 'string' && this.type === 'number') {
           value = String(this.value);
@@ -148,7 +158,7 @@ export default {
   watch: {
     bindKey: {
       handler(val) {
-        this.tempKey = val;
+        this.tempKey = this.jsonName || val;
       },
       immediate: true,
     },

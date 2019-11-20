@@ -1,8 +1,11 @@
 <template>
   <el-select
-  size="mini"
-  style="width:100px"
-  v-model="type" class="select-type">
+    v-bind="$attrs"
+    size="mini"
+    style="width:100px"
+    v-model="type"
+    class="select-type"
+  >
     <el-option
       v-for="one in types"
       :key="one.value"
@@ -35,7 +38,9 @@ export default {
   },
   computed: {
     types() {
-      return this.isRoot ? this.basicTypes.filter(one => ['object', 'array'].includes(one.value)) : this.basicTypes;
+      return this.isRoot
+        ? this.basicTypes.filter(one => ['object', 'array'].includes(one.value))
+        : this.basicTypes;
     },
   },
   watch: {
@@ -53,8 +58,8 @@ export default {
 </script>
 
 <style scoped>
-.select-type{
+.select-type {
   position: relative;
-  top:2px;
+  top: 2px;
 }
 </style>

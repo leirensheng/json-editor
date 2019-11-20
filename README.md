@@ -1,5 +1,5 @@
 # json-editor
-
+![](https://i.screenshot.net/04xo7b0)
 ## Project setup
 ```
 yarn install

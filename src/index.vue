@@ -10,7 +10,6 @@
         class="has-margin"
       />
 
-      <!-- el-input需要v-model实时更新 -->
       <el-input
         size="mini"
         type="text"
@@ -19,14 +18,7 @@
         style="width:100px"
         :disabled="isRoot||typeof bindKey==='number'"
       />
-      <!-- <input
-        size="mini"
-        type="text"
-        style="width:180px"
-        :value="bindKey"
-        :disabled="isRoot||typeof bindKey==='number'"
-        @input="(e)=>updateKey(e.target.value)"
-      /> -->
+
       <span style="padding:0 10px">=</span>
       <select-type
         :key="getRandomId()"
@@ -75,7 +67,7 @@
         />
       </div>
       <div v-else>
-        <div v-for="(item) in objectDataHandled"  :key="item.uniqueKey">
+        <div v-for="(item) in objectToArrayData"  :key="item.uniqueKey">
           <json-editor
           class="has-margin"
           :isRoot="false"
@@ -165,6 +157,62 @@ export default {
         this.noUpdateKey = false;
         return;
       }
+      this.handlerTempKeyChange(val, oldVal);
+    },
+    value: {
+      deep: true,
+      immediate: true,
+      handler(val) {
+        if (this.type === 'object') {
+          const keys = Object.keys(val);
+          const arr = this.objectToArrayData;
+          const objectDataKeys = arr.map(one => one.key);
+
+          if (arr.length === keys.length) {
+            const changeIndex = objectDataKeys.findIndex(one => !keys.includes(one));
+            if (changeIndex !== -1) {
+              const newKey = keys.find(one => !objectDataKeys.includes(one));
+              const newVal = { ...arr[changeIndex], key: newKey };
+              this.objectToArrayData.splice(changeIndex, 1, newVal);
+            }
+          } else if (arr.length > keys.length) {
+            const deleteItemIdx = arr.findIndex(one => !keys.includes(one.key));
+            this.objectToArrayData.splice(deleteItemIdx, 1);
+          } else if (keys.length - arr.length === 1) {
+            this.uniqueKey = this.uniqueKey + 1;
+            const addNewKey = keys.find(key => !objectDataKeys.includes(key));
+            this.objectToArrayData = [...arr, { value: val[addNewKey], key: addNewKey, uniqueKey: this.uniqueKey }];
+          } else {
+            const tempData = keys.map((key) => {
+              this.uniqueKey = this.uniqueKey + 1;
+              return {
+                key,
+                value: val[key],
+                uniqueKey: this.uniqueKey,
+              };
+            });
+            this.objectToArrayData = tempData.sort((a, b) => a.uniqueKey - b.uniqueKey);
+          }
+        }
+      },
+    },
+  },
+
+  data() {
+    return {
+      tempKey: '',
+      noUpdateKey: false,
+      uniqueKey: 1,
+      objectToArrayData: [],
+    };
+  },
+  mounted() {
+    this.updateKey = debounce(this.updateKey);
+    this.handlerTempKeyChange = debounce(this.handlerTempKeyChange);
+  },
+  methods: {
+    getType,
+    handlerTempKeyChange(val, oldVal) {
       const keys = Object.keys(this.$parent.value);
       let message = '';
       if (keys.includes(val)) {
@@ -174,7 +222,6 @@ export default {
       }
 
       if (message) {
-        console.log(message);
         this.$notification({
           message,
           type: 'warning',
@@ -187,60 +234,6 @@ export default {
         this.updateKey(val);
       }
     },
-    value: {
-      deep: true,
-      immediate: true,
-      handler(val) {
-        if (this.type === 'object') {
-          const keys = Object.keys(val);
-          const arr = this.objectDataHandled;
-          if (arr.length === keys.length) {
-            const objectDataKeys = arr.map(one => one.key);
-            const keysSet = new Set(keys);
-            const changeIndex = objectDataKeys.findIndex(one => !keysSet.has(one));
-            if (changeIndex !== -1) {
-              const newKey = keys.find(one => !objectDataKeys.includes(one));
-              const newVal = { ...arr[changeIndex], key: newKey };
-              this.objectDataHandled.splice(changeIndex, 1, newVal);
-            }
-          } else if (arr.length > keys.length) {
-            const deleteItemIdx = arr.findIndex(one => !keys.includes(one.key));
-            this.objectDataHandled.splice(deleteItemIdx, 1);
-          } else if (keys.length - arr.length === 1) {
-            this.uniqueKey = this.uniqueKey + 1;
-            const objectDataKeys = arr.map(one => one.key);
-            const targetKey = keys.find(key => !objectDataKeys.includes(key));
-            this.objectDataHandled = [...arr, { value: val[targetKey], key: targetKey, uniqueKey: this.uniqueKey }];
-          } else {
-            const tempData = keys.map((key) => {
-              this.uniqueKey = this.uniqueKey + 1;
-              return {
-                key,
-                value: val[key],
-                uniqueKey: this.uniqueKey,
-              };
-            });
-
-            this.objectDataHandled = tempData.sort((a, b) => a.uniqueKey - b.uniqueKey);
-          }
-        }
-      },
-    },
-  },
-
-  data() {
-    return {
-      tempKey: '',
-      noUpdateKey: false,
-      uniqueKey: 1,
-      objectDataHandled: [],
-    };
-  },
-  mounted() {
-    this.updateKey = debounce(this.updateKey);
-  },
-  methods: {
-    getType,
     getRandomId() {
       return Math.random()
         .toString(16)
@@ -297,7 +290,7 @@ export default {
       if (this.type === 'number') {
         if (!/^\d*$/g.test(val)) {
           this.$notification({
-            message: '格式不正确！',
+            message: '请输入数字',
             type: 'warning',
           });
         } else {

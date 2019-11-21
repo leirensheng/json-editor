@@ -17,6 +17,7 @@
         v-model="tempKey"
         style="width:100px"
         :disabled="isRoot||typeof bindKey==='number'"
+        @blur="handleBlur"
       />
 
       <span style="padding:0 10px">=</span>
@@ -162,13 +163,6 @@ export default {
       },
       immediate: true,
     },
-    tempKey(val, oldVal) {
-      if (this.noUpdateKey) {
-        this.noUpdateKey = false;
-        return;
-      }
-      this.handlerTempKeyChange(val, oldVal);
-    },
     value: {
       deep: true,
       immediate: true,
@@ -211,38 +205,39 @@ export default {
   data() {
     return {
       tempKey: '',
-      noUpdateKey: false,
       uniqueKey: 1,
       objectToArrayData: [],
     };
   },
   mounted() {
     this.updateKey = debounce(this.updateKey);
-    this.handlerTempKeyChange = debounce(this.handlerTempKeyChange);
   },
   methods: {
     getType,
+    handleBlur() {
+      this.handlerTempKeyChange(this.tempKey, '');
+    },
     handlerTempKeyChange(val, oldVal) {
-      const keys = Object.keys(this.$parent.value);
-      let message = '';
-      if (keys.includes(val)) {
-        message = `已经存在字段${val}`;
-      } else if (val === '') {
-        message = '字段名不能为空';
-      }
-
-      if (message) {
-        this.$notification({
-          message,
-          type: 'warning',
-        });
-        this.noUpdateKey = true;
-        setTimeout(() => {
+      this.$nextTick(() => {
+        const keys = this.$parent.objectToArrayData.map(one => one.key);
+        keys.pop();
+        let message = '';
+        if (val === '') {
+          message = '字段名不能为空';
+        } else if (keys.includes(val)) {
+          message = `已经存在字段${val}`;
+        }
+        if (message) {
+          this.$notification({
+            message,
+            type: 'warning',
+          });
           this.tempKey = oldVal;
-        }, 500);
-      } else {
-        this.updateKey(val);
-      }
+          this.updateKey(oldVal);
+        } else {
+          this.updateKey(val);
+        }
+      });
     },
     getRandomId() {
       return Math.random()

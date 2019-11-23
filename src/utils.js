@@ -1,6 +1,11 @@
 export function getType(val) {
-  if (typeof val === 'string' && /^#.{3,6}$/.test(val)) {
-    return 'color';
+  if (typeof val === 'string') {
+    if (/^#.{3,6}$/.test(val)) {
+      return 'color';
+    }
+    if (/^(\d){4}-(\d){2}-(\d){2}$/.test(val)) {
+      return 'date';
+    }
   }
   return Object.prototype.toString
     .call(val)

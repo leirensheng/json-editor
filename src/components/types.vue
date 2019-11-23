@@ -28,6 +28,7 @@ export default {
         { label: '对象', value: 'object' },
         { label: '数组', value: 'array' },
         { label: '颜色', value: 'color' },
+        { label: '日期', value: 'date' },
       ],
     };
   },

@@ -16,7 +16,10 @@ export default {
     return {
       // json:[123]
       json: {
-        a: [{ b: 5 }], b: '#fbc', c: 5, d: 7,
+        a: [{ b: 5 }],
+        b: '#fbc',
+        c: '2019-11-06',
+        d: 7,
       },
     };
   },

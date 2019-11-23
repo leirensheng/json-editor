@@ -54,6 +54,19 @@
         @input="updateVal"
         size="mini"
       />
+      <el-date-picker
+        :value="value"
+        @input="updateVal"
+        type="date"
+        size="mini"
+        :clearable="false"
+        style="width:165px;margin-left:10px"
+        v-if="type==='date'"
+        placeholder="选择日期"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+      >
+      </el-date-picker>
 
       <delete-btn
         class="delete-btn"
@@ -152,6 +165,7 @@ export default {
             boolean: false,
             null: null,
             color: '#000',
+            date: new Date().toLocaleDateString().replace(/\//g, '-'),
           };
           value = maps[val];
         }

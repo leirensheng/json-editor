@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import {
-  Select, Input, Option, Notification, Button, ColorPicker,
+  Select, Input, Option, Notification, Button, ColorPicker, DatePicker,
 } from 'element-ui';
 import App from './test.vue';
 
@@ -10,6 +10,7 @@ Vue.use(Input);
 Vue.use(Option);
 Vue.use(ColorPicker);
 Vue.use(Button);
+Vue.use(DatePicker);
 
 
 Vue.prototype.$notification = Notification;

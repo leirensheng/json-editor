@@ -16,7 +16,7 @@ export default {
     return {
       // json:[123]
       json: {
-        a: [{ b: 5 }], b: 2, c: 5, d: 7,
+        a: [{ b: 5 }], b: '#fbc', c: 5, d: 7,
       },
     };
   },

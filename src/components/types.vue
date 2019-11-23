@@ -27,6 +27,7 @@ export default {
         { label: 'null', value: 'null' },
         { label: '对象', value: 'object' },
         { label: '数组', value: 'array' },
+        { label: '颜色', value: 'color' },
       ],
     };
   },

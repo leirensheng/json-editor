@@ -47,6 +47,13 @@
         <el-option value="true">true</el-option>
         <el-option value="false">false</el-option>
       </el-select>
+      <el-color-picker
+        style="margin-left:10px"
+        v-if="type==='color'"
+        :value="value"
+        @input="updateVal"
+        size="mini"
+      />
 
       <delete-btn
         class="delete-btn"
@@ -55,7 +62,10 @@
       />
     </div>
 
-    <div v-if="isObjectOrArray" style="position:relative;top:-2px">
+    <div
+      v-if="isObjectOrArray"
+      style="position:relative;top:-2px"
+    >
       <div v-if="type==='array'">
         <json-editor
           class="has-margin"
@@ -69,16 +79,19 @@
         />
       </div>
       <div v-else>
-        <div v-for="(item) in objectToArrayData"  :key="item.uniqueKey">
+        <div
+          v-for="(item) in objectToArrayData"
+          :key="item.uniqueKey"
+        >
           <json-editor
-          class="has-margin"
-          :isRoot="false"
-          :value="value[item.key]"
-          :bindKey="item.key"
-          @deleteItem="handleDelete"
-          @update:bindKey="(newBindKey)=>handleUpdateKey({key:item.key,value,newBindKey})"
-          @update:value="(newVal)=>handleUpdateVal({key:item.key,value,newVal})"
-        />
+            class="has-margin"
+            :isRoot="false"
+            :value="value[item.key]"
+            :bindKey="item.key"
+            @deleteItem="handleDelete"
+            @update:bindKey="(newBindKey)=>handleUpdateKey({key:item.key,value,newBindKey})"
+            @update:value="(newVal)=>handleUpdateVal({key:item.key,value,newVal})"
+          />
         </div>
       </div>
       <add-btn @click="handleAdd" />
@@ -138,6 +151,7 @@ export default {
             number: 0,
             boolean: false,
             null: null,
+            color: '#000',
           };
           value = maps[val];
         }
@@ -173,7 +187,9 @@ export default {
           const objectDataKeys = arr.map(one => one.key);
 
           if (arr.length === keys.length) {
-            const changeIndex = objectDataKeys.findIndex(one => !keys.includes(one));
+            const changeIndex = objectDataKeys.findIndex(
+              one => !keys.includes(one),
+            );
             if (changeIndex !== -1) {
               const newKey = keys.find(one => !objectDataKeys.includes(one));
               const newVal = { ...arr[changeIndex], key: newKey };
@@ -185,7 +201,14 @@ export default {
           } else if (keys.length - arr.length === 1) {
             this.uniqueKey = this.uniqueKey + 1;
             const addNewKey = keys.find(key => !objectDataKeys.includes(key));
-            this.objectToArrayData = [...arr, { value: val[addNewKey], key: addNewKey, uniqueKey: this.uniqueKey }];
+            this.objectToArrayData = [
+              ...arr,
+              {
+                value: val[addNewKey],
+                key: addNewKey,
+                uniqueKey: this.uniqueKey,
+              },
+            ];
           } else {
             const tempData = keys.map((key) => {
               this.uniqueKey = this.uniqueKey + 1;
@@ -195,7 +218,9 @@ export default {
                 uniqueKey: this.uniqueKey,
               };
             });
-            this.objectToArrayData = tempData.sort((a, b) => a.uniqueKey - b.uniqueKey);
+            this.objectToArrayData = tempData.sort(
+              (a, b) => a.uniqueKey - b.uniqueKey,
+            );
           }
         }
       },
@@ -319,9 +344,9 @@ export default {
 .delete-btn {
   margin-left: 10px;
 }
-.select-type{
+.select-type {
   position: relative;
-  top:-0.5px;
+  top: -0.5px;
 }
 .one-item {
   position: relative;

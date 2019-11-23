@@ -1,4 +1,7 @@
 export function getType(val) {
+  if (typeof val === 'string' && /^#.{3,6}$/.test(val)) {
+    return 'color';
+  }
   return Object.prototype.toString
     .call(val)
     .slice(8, -1)

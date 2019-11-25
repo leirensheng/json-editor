@@ -93,14 +93,14 @@
       </div>
       <div v-else>
         <div
-          v-for="(item) in objectToArrayData"
+          v-for="(item,index) in objectToArrayData"
           :key="item.uniqueKey"
         >
           <json-editor
             class="has-margin"
             :isRoot="false"
             :value="value[item.key]"
-            :bindKey="item.key"
+            :bindKey="item.key"            :indexOfObjectToArrayData="index"
             @deleteItem="handleDelete"
             @update:bindKey="(newBindKey)=>handleUpdateKey({key:item.key,value,newBindKey})"
             @update:value="(newVal)=>handleUpdateVal({key:item.key,value,newVal})"
@@ -136,6 +136,10 @@ export default {
     },
     rootType: {
       default: () => '',
+    },
+    // 对象数据转成array后的索引
+    indexOfObjectToArrayData: {
+      default: () => 0,
     },
   },
   computed: {
@@ -259,6 +263,8 @@ export default {
     handlerTempKeyChange(val, oldVal) {
       this.$nextTick(() => {
         const keys = this.$parent.objectToArrayData.map(one => one.key);
+        keys.splice(this.indexOfObjectToArrayData, 1, 0);
+
         keys.pop();
         let message = '';
         if (val === '') {

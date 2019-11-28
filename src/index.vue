@@ -1,5 +1,5 @@
 <template>
-  <div :class="isRoot?'json-editor':'json-editor has-border'">
+  <div :class="isRoot ? 'json-editor' : 'json-editor has-border'">
     <div class="one-item">
       <XLine
         v-if="!isRoot"
@@ -9,69 +9,78 @@
         v-else
         class="has-margin"
       />
-
-      <el-input
-        size="mini"
-        type="text"
+      <!-- 字段名 -->
+      <my-input
+        :value="isRoot ? jsonName : bindKey"
         placeholder="字段"
-        v-model="tempKey"
-        style="width:100px"
-        :disabled="isRoot||typeof bindKey==='number'"
-        @blur="handleBlur"
-      />
-
+        type="string"
+        :disabled="isRoot || typeof bindKey === 'number'"
+        @input="updateKey"
+        :validateFunc="validateKey"
+      ></my-input>
+      <!-- 类型 -->
       <span style="padding:0 10px">=</span>
       <select-type
-        :disabled="isRoot && rootType!==''"
-        :key="getRandomId()"
+        :disabled="isRoot && rootType !== ''"
         class="slect-type"
         :isRoot="isRoot"
         v-model="type"
       />
+      <!-- 值 -->
+      <span style="margin-left:10px">
+        <el-input
+          size="mini"
+          style="width:100px;"
+          v-if="type === 'string'"
+          :value="value"
+          placeholder="值"
+          @input="updateVal"
+        />
 
-      <el-input
-        size="mini"
-        style="width:100px;margin-left:10px"
-        v-if="['number','string'].includes(type)"
-        :value="value"
-        placeholder="值"
-        @input="updateVal"
-      />
-      <el-select
-        size="mini"
-        style="width:100px;margin-left:10px"
-        v-if="type==='boolean'"
-        :value="String(value)"
-        @input="updateVal"
-      >
-        <el-option value="true">true</el-option>
-        <el-option value="false">false</el-option>
-      </el-select>
-      <el-color-picker
-        style="margin-left:10px"
-        v-if="type==='color'"
-        :value="value"
-        @input="updateVal"
-        size="mini"
-      />
-      <el-date-picker
-        :value="value"
-        @input="updateVal"
-        type="date"
-        size="mini"
-        :clearable="false"
-        style="width:165px;margin-left:10px"
-        v-if="type==='date'"
-        placeholder="选择日期"
-        format="yyyy 年 MM 月 dd 日"
-        value-format="yyyy-MM-dd"
-      >
-      </el-date-picker>
+        <my-input
+          placeholder="值"
+          v-if="type === 'number'"
+          :value="value"
+          @input="updateVal"
+        ></my-input>
+
+        <el-select
+          size="mini"
+          style="width:100px;"
+          v-if="type === 'boolean'"
+          :value="String(value)"
+          @input="updateVal"
+        >
+          <el-option value="true">true</el-option>
+          <el-option value="false">false</el-option>
+        </el-select>
+
+        <el-color-picker
+          v-if="type === 'color'"
+          :value="value"
+          @input="updateVal"
+          size="mini"
+        />
+
+        <el-date-picker
+          :value="value"
+          @input="updateVal"
+          type="date"
+          size="mini"
+          :clearable="false"
+          style="width:165px;"
+          v-if="type === 'date'"
+          placeholder="选择日期"
+          format="yyyy 年 MM 月 dd 日"
+          value-format="yyyy-MM-dd"
+        >
+        </el-date-picker>
+      </span>
 
       <delete-btn
         class="delete-btn"
         v-if="!isRoot"
-        @click="()=>this.$emit('deleteItem', bindKey)"
+        @click="() => this.$emit('deleteItem', bindKey)"
       />
     </div>
 
@@ -79,31 +88,32 @@
       v-if="isObjectOrArray"
       style="position:relative;top:-2px"
     >
-      <div v-if="type==='array'">
+      <div v-if="type === 'array'">
         <json-editor
           class="has-margin"
-          v-for="(item,index) in value"
+          v-for="(item, index) in value"
           :key="index"
           :isRoot="false"
           :bindKey="index"
           :value="item"
           @deleteItem="handleDelete"
-          @update:value="(newVal)=>handleUpdateVal({value,key:index,newVal})"
+          @update:value="newVal => handleUpdateVal({value, key: index, newVal})"
         />
       </div>
       <div v-else>
         <div
-          v-for="(item,index) in objectToArrayData"
+          v-for="(item, index) in objectToArrayData"
           :key="item.uniqueKey"
         >
           <json-editor
             class="has-margin"
             :isRoot="false"
             :value="value[item.key]"
-            :bindKey="item.key"            :indexOfObjectToArrayData="index"
+            :bindKey="item.key"
+            :indexOfObjectToArrayData="index"
             @deleteItem="handleDelete"
-            @update:bindKey="(newBindKey)=>handleUpdateKey({key:item.key,value,newBindKey})"
-            @update:value="(newVal)=>handleUpdateVal({key:item.key,value,newVal})"
+            @update:bindKey="newBindKey => handleUpdateKey({key: item.key, value, newBindKey})"
+            @update:value="newVal => handleUpdateVal({key: item.key, value, newVal})"
           />
         </div>
       </div>
@@ -117,7 +127,8 @@ import AddBtn from './components/add-btn.vue';
 import DeleteBtn from './components/delete-btn.vue';
 import XLine from './components/x-line.vue';
 import SelectType from './components/types.vue';
-import { getType, debounce } from './utils';
+import { getType } from './utils';
+import MyInput from './components/my-input.vue';
 
 export default {
   name: 'json-editor',
@@ -187,14 +198,9 @@ export default {
     SelectType,
     AddBtn,
     DeleteBtn,
+    MyInput,
   },
   watch: {
-    bindKey: {
-      handler(val) {
-        this.tempKey = this.jsonName || val;
-      },
-      immediate: true,
-    },
     value: {
       deep: true,
       immediate: true,
@@ -247,48 +253,37 @@ export default {
 
   data() {
     return {
-      tempKey: '',
       uniqueKey: 1,
       objectToArrayData: [],
     };
   },
   mounted() {
-    this.updateKey = debounce(this.updateKey);
+    if (this.isRoot) {
+      this.$emit('jsonMounted');
+    }
   },
   methods: {
     getType,
-    handleBlur() {
-      this.handlerTempKeyChange(this.tempKey, '');
-    },
-    handlerTempKeyChange(val, oldVal) {
-      this.$nextTick(() => {
-        const keys = this.$parent.objectToArrayData.map(one => one.key);
-        keys.splice(this.indexOfObjectToArrayData, 1, 0);
+    validateKey(val) {
+      const keys = this.$parent.objectToArrayData.map(one => one.key);
+      keys.splice(this.indexOfObjectToArrayData, 1, 0);
 
-        keys.pop();
-        let message = '';
-        if (val === '') {
-          message = '字段名不能为空';
-        } else if (keys.includes(val)) {
-          message = `已经存在字段${val}`;
-        }
-        if (message) {
-          this.$notification({
-            message,
-            type: 'warning',
-          });
-          this.tempKey = oldVal;
-          this.updateKey(oldVal);
-        } else {
-          this.updateKey(val);
-        }
-      });
+      let message = '';
+      if (val === '') {
+        message = '字段名不能为空';
+      } else if (keys.includes(val)) {
+        message = `已经存在字段${val}`;
+      }
+      if (message) {
+        this.$notification({
+          type: 'warning',
+          message,
+        });
+        return false;
+      }
+      return true;
     },
-    getRandomId() {
-      return Math.random()
-        .toString(16)
-        .slice(-6);
-    },
+
     handleDelete(key) {
       const copy = JSON.parse(JSON.stringify(this.value));
       if (this.type === 'array') {
@@ -337,16 +332,7 @@ export default {
     },
 
     updateVal(val) {
-      if (this.type === 'number') {
-        if (!/^\d*$/g.test(val)) {
-          this.$notification({
-            message: '请输入数字',
-            type: 'warning',
-          });
-        } else {
-          this.$emit('update:value', Number(val));
-        }
-      } else if (this.type === 'boolean') {
+      if (this.type === 'boolean') {
         this.$emit('update:value', val !== 'false');
       } else {
         this.$emit('update:value', val);

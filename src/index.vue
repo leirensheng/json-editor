@@ -203,7 +203,6 @@ export default {
   watch: {
     value: {
       deep: true,
-      immediate: true,
       handler(val) {
         if (this.type === 'object') {
           const keys = Object.keys(val);
@@ -211,40 +210,27 @@ export default {
           const objectDataKeys = arr.map(one => one.key);
 
           if (arr.length === keys.length) {
-            const changeIndex = objectDataKeys.findIndex(
-              one => !keys.includes(one),
-            );
+            // 修改
+            const changeIndex = objectDataKeys.findIndex(one => !keys.includes(one));
             if (changeIndex !== -1) {
               const newKey = keys.find(one => !objectDataKeys.includes(one));
               const newVal = { ...arr[changeIndex], key: newKey };
               this.objectToArrayData.splice(changeIndex, 1, newVal);
             }
-          } else if (arr.length > keys.length) {
+          } else if (arr.length - keys.length === 1) {
+            // 删除
+
             const deleteItemIdx = arr.findIndex(one => !keys.includes(one.key));
             this.objectToArrayData.splice(deleteItemIdx, 1);
           } else if (keys.length - arr.length === 1) {
+            // 新增
+
             this.uniqueKey = this.uniqueKey + 1;
             const addNewKey = keys.find(key => !objectDataKeys.includes(key));
             this.objectToArrayData = [
               ...arr,
-              {
-                value: val[addNewKey],
-                key: addNewKey,
-                uniqueKey: this.uniqueKey,
-              },
+              { value: val[addNewKey], key: addNewKey, uniqueKey: this.uniqueKey },
             ];
-          } else {
-            const tempData = keys.map((key) => {
-              this.uniqueKey = this.uniqueKey + 1;
-              return {
-                key,
-                value: val[key],
-                uniqueKey: this.uniqueKey,
-              };
-            });
-            this.objectToArrayData = tempData.sort(
-              (a, b) => a.uniqueKey - b.uniqueKey,
-            );
           }
         }
       },
@@ -256,6 +242,18 @@ export default {
       uniqueKey: 1,
       objectToArrayData: [],
     };
+  },
+  created() {
+    if (this.type === 'object') {
+      const val = this.value;
+      const keys = Object.keys(val);
+      this.objectToArrayData = keys.map((key, index) => ({
+        key,
+        value: val[key],
+        uniqueKey: index,
+      }));
+      this.uniqueKey = keys.length - 1;
+    }
   },
   mounted() {
     if (this.isRoot) {
